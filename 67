@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>G-Lens 租約風險辨識系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fefdfb;
+    --purple: #684EFF;
+    --purple-light: #A994FF;
+    --purple-pale: #f0eeff;
+    --yellow: #FFEBB8;
+    --yellow-mid: #FFCA28;
+    --olive: #6C835A;
+    --navy: #2D3643;
+    --coral: #FF7360;
+    --red-soft: #EF5350;
+    --green-soft: #66BB6A;
+    --white: #ffffff;
+    --gray-light: #f5f4f0;
+    --gray-mid: #e8e6df;
+    --text-muted: #8a8880;
+    --nav-h: 60px;
+    --bottom-h: 68px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; }
+
+  body {
+    background-color: var(--cream);
+    font-family: 'Noto Sans TC', 'Nunito', sans-serif;
+    color: var(--navy);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; right: -100px;
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, rgba(169,148,255,0.18) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 80px; left: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(255,235,184,0.4) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── NAVBAR ── */
+  .navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--nav-h);
+    background: rgba(254,253,251,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.35rem;
+    color: var(--olive);
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--coral);
+    border-radius: 50%;
+    display: inline-block;
+    margin-bottom: 2px;
+  }
+
+  .lang-toggle {
+    display: flex;
+    border: 1.5px solid var(--olive);
+    border-radius: 999px;
+    overflow: hidden;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .lang-toggle span {
+    padding: 5px 10px;
+    cursor: pointer;
+    color: var(--olive);
+    transition: background 0.2s, color 0.2s;
+  }
+  .lang-toggle span.active {
+    background: var(--olive);
+    color: white;
+  }
+
+  /* ── MAIN SCROLL AREA ── */
+  main {
+    padding-top: calc(var(--nav-h) + 16px);
+    padding-bottom: calc(var(--bottom-h) + 20px);
+    position: relative; z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 24px 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .hero-text { flex: 1; }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--yellow);
+    color: #7a5a00;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .hero-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.55rem;
+    line-height: 1.25;
+    color: var(--coral);
+    margin-bottom: 8px;
+  }
+
+  .hero-sub {
+    font-size: 0.88rem;
+    color: var(--navy);
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+
+  .hero-illustration {
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+    border-radius: 20px;
+    object-fit: cover;
+    background: var(--purple-pale);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-illustration img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+  }
+
+  /* SVG placeholder illustration */
+  .illus-placeholder {
+    width: 110px; height: 110px;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--navy);
+    margin-bottom: 14px;
+  }
+
+  /* ── UPLOAD SECTION ── */
+  .upload-section {
+    padding: 12px 20px 20px;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--purple);
+    border-radius: 24px;
+    background: rgba(104,78,255,0.04);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .upload-zone:active {
+    background: rgba(104,78,255,0.09);
+  }
+
+  .upload-icon-wrap {
+    width: 64px; height: 64px;
+    background: var(--purple-pale);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .upload-icon-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(104,78,255,0.2);
+  }
+
+  .camera-svg {
+    width: 30px; height: 30px;
+    fill: none;
+    stroke: var(--purple);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .upload-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--navy);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .upload-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--purple);
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    margin-top: 4px;
+    box-shadow: 0 4px 16px rgba(104,78,255,0.28);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .upload-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(104,78,255,0.2);
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    padding: 4px 20px 16px;
+  }
+  .stat-chip {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid var(--gray-mid);
+  }
+  .stat-num {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    color: var(--coral);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ── FEATURES SCROLL ── */
+  .features-section {
+    padding: 4px 0 20px;
+  }
+  .features-header {
+    padding: 0 20px 12px;
+  }
+  .features-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 4px 20px 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .features-scroll::-webkit-scrollbar { display: none; }
+
+  .feat-card {
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+    background: white;
+    border-radius: 24px;
+    padding: 20px 18px;
+    border: 1px solid var(--gray-mid);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feat-icon-wrap {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+  .feat-icon-wrap.purple { background: var(--purple-pale); }
+  .feat-icon-wrap.yellow { background: var(--yellow); }
+  .feat-icon-wrap.green  { background: #e6f4ea; }
+
+  .feat-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--navy);
+    line-height: 1.3;
+  }
+
+  .feat-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .feat-tag {
+    align-self: flex-start;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-top: auto;
+  }
+  .feat-tag.purple { background: var(--purple-pale); color: var(--purple); }
+  .feat-tag.yellow { background: var(--yellow); color: #7a5a00; }
+  .feat-tag.green  { background: #e6f4ea; color: #2e7d32; }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    padding: 4px 20px 24px;
+  }
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .step-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    position: relative;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 18px; top: 52px; bottom: 0;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--gray-mid) 0, var(--gray-mid) 4px,
+      transparent 4px, transparent 10px
+    );
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: white;
+    background: var(--purple);
+    position: relative; z-index: 1;
+  }
+  .step-num.orange { background: var(--coral); }
+  .step-num.green  { background: var(--green-soft); }
+  .step-text {}
+  .step-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--navy);
+    margin-bottom: 2px;
+  }
+  .step-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    height: var(--bottom-h);
+    background: rgba(254,253,251,0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--gray-mid);
+    display: flex; align-items: center;
+    padding: 0 8px env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 8px 4px;
+    border-radius: 16px;
+    transition: background 0.15s;
+    color: var(--text-muted);
+  }
+  .nav-item.active { color: var(--purple); }
+  .nav-item:active { background: var(--purple-pale); }
+
+  .nav-icon {
+    width: 24px; height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .nav-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .nav-active-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--purple);
+    margin-top: 1px;
+  }
+
+  /* ── RISK TAG DEMO ── */
+  .risk-demo {
+    padding: 0 20px 20px;
+  }
+  .risk-demo-card {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid var(--gray-mid);
+  }
+  .risk-demo-title {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .risk-demo-title::before {
+    content: ''; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green-soft);
+  }
+  .risk-row {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--gray-light);
+    font-size: 0.82rem;
+  }
+  .risk-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .risk-clause { color: var(--navy); flex: 1; padding-right: 8px; line-height: 1.4; }
+  .risk-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .risk-badge.red    { background: #ffebeb; color: var(--red-soft); }
+  .risk-badge.yellow { background: #fff8e1; color: #f57f17; }
+  .risk-badge.green  { background: #e8f5e9; color: #2e7d32; }
+
+  /* animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero        { animation: fadeUp 0.5s ease both; }
+  .upload-section { animation: fadeUp 0.5s 0.08s ease both; }
+  .stats-row   { animation: fadeUp 0.5s 0.14s ease both; }
+  .features-section { animation: fadeUp 0.5s 0.2s ease both; }
+  .risk-demo   { animation: fadeUp 0.5s 0.26s ease both; }
+  .how-section { animation: fadeUp 0.5s 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="logo">
+    G-Lens<span class="logo-dot"></span>
+  </div>
+  <div class="lang-toggle">
+    <span class="active">繁中</span>
+    <span>EN</span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-top">
+      <div class="hero-text">
+        <span class="hero-badge">🏠 AI 租約保護</span>
+        <h1 class="hero-title">G-Lens<br>租約風險<br>辨識系統</h1>
+        <p class="hero-sub">簽約前照一下，<br>遠離租屋惡房東！</p>
+      </div>
+      <!-- 插畫區：請替換 src 為實際插畫路徑 -->
+      <div class="hero-illustration">
+        <img src="hero-illustration.png" alt="困惑的使用者抱著合約" class="hero-illustration"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+        <!-- SVG 佔位插畫（圖片載入失敗時顯示） -->
+        <svg class="illus-placeholder" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <rect width="110" height="110" rx="20" fill="#f0eeff"/>
+          <!-- blob bg -->
+          <ellipse cx="55" cy="58" rx="32" ry="34" fill="#A994FF" opacity="0.25"/>
+          <!-- body -->
+          <rect x="35" y="55" width="40" height="36" rx="12" fill="#FFEBB8"/>
+          <!-- head -->
+          <circle cx="55" cy="46" r="16" fill="#FFD9C4"/>
+          <!-- hair -->
+          <ellipse cx="55" cy="33" rx="16" ry="9" fill="#2D3643"/>
+          <ellipse cx="41" cy="43" rx="4" ry="8" fill="#2D3643"/>
+          <!-- eyes -->
+          <circle cx="50" cy="46" r="2.2" fill="#2D3643"/>
+          <circle cx="60" cy="46" r="2.2" fill="#2D3643"/>
+          <!-- worried brow -->
+          <path d="M47 41 Q50 39 53 41" stroke="#2D3643" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M57 41 Q60 39 63 41" stroke="#2D3643" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <!-- papers -->
+          <rect x="30" y="70" width="50" height="7" rx="3" fill="white" stroke="#684EFF" stroke-width="1"/>
+          <rect x="32" y="78" width="46" height="7" rx="3" fill="white" stroke="#A994FF" stroke-width="1"/>
+          <!-- text lines on papers -->
+          <line x1="35" y1="73.5" x2="55" y2="73.5" stroke="#ccc" stroke-width="1.2"/>
+          <line x1="35" y1="81.5" x2="52" y2="81.5" stroke="#ccc" stroke-width="1.2"/>
+          <!-- sweat drop -->
+          <ellipse cx="70" cy="38" rx="3" ry="4" fill="#A994FF" opacity="0.7"/>
+          <!-- star/sparkle confused -->
+          <path d="M72 28 L73 32 L77 33 L73 34 L72 38 L71 34 L67 33 L71 32 Z" fill="#FF7360" opacity="0.8"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-chip">
+      <span class="stat-num">15.2%</span>
+      <span class="stat-label">大專院校<br>周邊契約<br>不合格率</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-num">960</span>
+      <span class="stat-label">115Q1<br>租賃爭議<br>調解案件</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-num" style="color:var(--purple);">3秒</span>
+      <span class="stat-label">AI 即時<br>條款<br>風險掃描</span>
+    </div>
+  </div>
+
+  <!-- UPLOAD SECTION -->
+  <section class="upload-section">
+    <p class="section-label">開始分析</p>
+    <p class="section-title">上傳您的租屋契約</p>
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon-wrap">
+        <svg class="camera-svg" viewBox="0 0 24 24">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </div>
+      <p class="upload-title">請上傳或拍攝<br>您的租屋契約</p>
+      <p class="upload-hint">支援照片或 PDF（多頁影像辨識）</p>
+      <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+        📷 立即拍照 / 上傳
+      </button>
+      <input type="file" id="fileInput" accept="image/*,application/pdf" capture="camera" hidden
+        onchange="handleFile(this)">
+    </div>
+  </section>
+
+  <!-- RISK DEMO PREVIEW -->
+  <div class="risk-demo">
+    <p class="section-label">分析結果示例</p>
+    <p class="section-title">條款風險評估報告</p>
+    <div class="risk-demo-card">
+      <div class="risk-demo-title">已完成辨識 · 3 項條款待確認</div>
+      <div class="risk-row">
+        <span class="risk-clause">第5條：租金得隨時調漲，租客不得異議</span>
+        <span class="risk-badge red">⚠ 違法條款</span>
+      </div>
+      <div class="risk-row">
+        <span class="risk-clause">第9條：修繕費用一律由承租人負擔</span>
+        <span class="risk-badge yellow">⚡ 灰色地帶</span>
+      </div>
+      <div class="risk-row">
+        <span class="risk-clause">第2條：租期一年，到期前三個月通知</span>
+        <span class="risk-badge green">✓ 合法條款</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES SCROLL -->
+  <section class="features-section">
+    <div class="features-header">
+      <p class="section-label">系統技術特色</p>
+      <p class="section-title">三大核心防護機制</p>
+    </div>
+    <div class="features-scroll">
+      <div class="feat-card">
+        <div class="feat-icon-wrap purple">🔒</div>
+        <div class="feat-title">隱私去識別化</div>
+        <div class="feat-desc">送出分析前自動遮蔽姓名、身份證字號、電話等個資，保護您的隱私安全。</div>
+        <span class="feat-tag purple">Microsoft Presidio</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap yellow">⚖️</div>
+        <div class="feat-title">內政部條款比對</div>
+        <div class="feat-desc">對照《住宅租賃定型化契約應記載及不得記載事項》，確保合規性檢視有所依據。</div>
+        <span class="feat-tag yellow">法規知識注入</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap green">🌐</div>
+        <div class="feat-title">中英雙語對照</div>
+        <div class="feat-desc">繁體中文契約辨識後，同步產出英文輔助說明，外籍留學生也能輕鬆讀懂。</div>
+        <span class="feat-tag green">外籍友善</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section">
+    <p class="section-label">使用流程</p>
+    <p class="section-title">三步驟完成風險辨識</p>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <div class="step-title">📸 拍照或上傳契約</div>
+          <div class="step-desc">支援手機直接拍攝多頁租賃契約，或上傳已有的 PDF 檔案。</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num orange">2</div>
+        <div class="step-text">
+          <div class="step-title">🤖 AI 自動辨識分析</div>
+          <div class="step-desc">系統自動執行 OCR 文字辨識、個資去識別化，並由 AI 比對法規條款風險。</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num green">3</div>
+        <div class="step-text">
+          <div class="step-title">📋 取得風險評估報告</div>
+          <div class="step-desc">依風險等級標示每條條款，附上白話說明與參考依據，協助您安心簽約。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="setNav(this)">
+    <svg class="nav-icon" viewBox="0 0 24 24">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span class="nav-label">首頁</span>
+    <div class="nav-active-dot"></div>
+  </div>
+  <div class="nav-item" onclick="setNav(this)">
+    <svg class="nav-icon" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+    <span class="nav-label">歷史紀錄</span>
+  </div>
+  <div class="nav-item" onclick="setNav(this)">
+    <svg class="nav-icon" viewBox="0 0 24 24">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span class="nav-label">個人設定</span>
+  </div>
+</nav>
+
+<script>
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    const dot = n.querySelector('.nav-active-dot');
+    if (dot) dot.remove();
+  });
+  el.classList.add('active');
+  const dot = document.createElement('div');
+  dot.className = 'nav-active-dot';
+  el.appendChild(dot);
+}
+
+function handleFile(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const zone = document.querySelector('.upload-zone');
+    zone.style.borderColor = '#66BB6A';
+    zone.style.background = 'rgba(102,187,106,0.06)';
+    const title = zone.querySelector('.upload-title');
+    title.textContent = '✓ 已上傳：' + file.name.substring(0, 20) + (file.name.length > 20 ? '...' : '');
+    const hint = zone.querySelector('.upload-hint');
+    hint.textContent = '正在處理中，請稍候...';
+    const btn = zone.querySelector('.upload-btn');
+    btn.textContent = '⏳ 分析中...';
+    btn.style.background = '#66BB6A';
+  }
+}
+
+document.querySelector('.lang-toggle').addEventListener('click', function(e) {
+  if (e.target.tagName === 'SPAN') {
+    this.querySelectorAll('span').forEach(s => s.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+});
+</script>
+</body>
+</html>
